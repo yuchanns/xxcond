@@ -47,7 +47,7 @@ func TestCond(t *testing.T) {
 		c.Signal()
 	}()
 
-	c.Wait()
+	assert.True(c.Wait())
 }
 
 func TestLockUnlock(t *testing.T) {
@@ -120,7 +120,7 @@ func TestWaitSignal(t *testing.T) {
 		defer mu.Unlock()
 		return ready
 	}() {
-		c.Wait()
+		assert.True(c.Wait())
 	}
 	c.Unlock()
 
@@ -154,7 +154,7 @@ func TestSignalWithoutWaiters(t *testing.T) {
 	}()
 
 	c.Lock()
-	c.Wait()
+	assert.True(c.Wait())
 	c.Unlock()
 
 	<-done
@@ -214,7 +214,7 @@ func TestWaitAfterSignal(t *testing.T) {
 
 	start := time.Now()
 	c.Lock()
-	c.Wait()
+	assert.True(c.Wait())
 	c.Unlock()
 	elapsed := time.Since(start)
 
@@ -242,7 +242,7 @@ func TestRapidSignaling(t *testing.T) {
 		defer wg.Done()
 		for range 10 {
 			c.Lock()
-			c.Wait()
+			assert.True(c.Wait())
 			atomic.AddInt32(&waitCount, 1)
 			c.Unlock()
 		}

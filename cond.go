@@ -129,18 +129,24 @@ func (c *Cond) Unlock() {
 //   - Caller must hold the lock before calling Wait.
 //   - Wait atomically unlocks, blocks, then locks again before returning.
 //
+// Returns:
+//   - ok: true if the wait was successful (will blocks until notified), false indicates an immediate return without waiting.
+//
 // Safety:
 //   - Only a single waiter is supported. Multiple waiters will panic.
-func (c *Cond) Wait() {
+func (c *Cond) Wait() (ok bool) {
 	c.assert()
 	if c.waiter.Len() > 0 {
 		panic("xxcond: multiple waiters are not supported")
 	}
 	c.Unlock()
 	done := make(chan struct{})
-	c.waiter.Push(done)
-	<-done
-	c.Lock()
+	ok = c.waiter.Push(done)
+	if ok {
+		<-done
+		c.Lock()
+	}
+	return
 }
 
 // Signal wakes the current waiter, if one exists.
