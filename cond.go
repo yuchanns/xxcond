@@ -20,8 +20,8 @@
 package xxcond
 
 import (
+	"runtime"
 	"sync/atomic"
-	"time"
 	"unsafe"
 
 	"go.yuchanns.xyz/xxchan"
@@ -39,19 +39,19 @@ import (
 //
 // Usage example:
 //
-//     // Calculate buffer size and allocate memory
-//     size := xxcond.Sizeof()
-//     buf := make([]byte, size)
-//     c := xxcond.Make(unsafe.Pointer(&buf[0]))
+//	// Calculate buffer size and allocate memory
+//	size := xxcond.Sizeof()
+//	buf := make([]byte, size)
+//	c := xxcond.Make(unsafe.Pointer(&buf[0]))
 //
-//     go func() {
-//         // ...
-//         c.Signal() // wake the waiter
-//     }()
-//     c.Lock()
-//     c.Wait()
-//     // ...
-//     c.Unlock()
+//	go func() {
+//	    // ...
+//	    c.Signal() // wake the waiter
+//	}()
+//	c.Lock()
+//	c.Wait()
+//	// ...
+//	c.Unlock()
 //
 // Safety:
 // - Only one goroutine may Wait at a time. Multiple concurrent waiters will panic.
@@ -112,7 +112,7 @@ func (c *Cond) assert() {
 func (c *Cond) Lock() {
 	c.assert()
 	for !atomic.CompareAndSwapInt32(&c.l, 0, 1) {
-		time.Sleep(time.Microsecond)
+		runtime.Gosched()
 	}
 }
 
