@@ -59,7 +59,7 @@ import (
 type Cond struct {
 	l int32
 
-	waiter xxchan.Channel[chan struct{}]
+	waiter *xxchan.Channel[chan struct{}]
 }
 
 // alignUp rounds n up to the closest multiple of align.
@@ -75,7 +75,8 @@ func alignUp(n, align int) int {
 //
 // Use this value to allocate a byte buffer large enough to host a Cond instance.
 func Sizeof() int {
-	rawSize := int(unsafe.Sizeof(int32(0))) + xxchan.Sizeof[chan struct{}](1)
+	var c *Cond
+	rawSize := int(unsafe.Sizeof(*c)) + xxchan.Sizeof[chan struct{}](1)
 	return alignUp(rawSize, int(unsafe.Alignof(make(chan struct{}))))
 }
 
@@ -93,7 +94,7 @@ func Sizeof() int {
 func Make(ptr unsafe.Pointer) *Cond {
 	c := (*Cond)(ptr)
 	c.l = 0
-	c.waiter = *xxchan.Make[chan struct{}](unsafe.Pointer(uintptr(ptr)+unsafe.Sizeof(int32(0))), 1)
+	c.waiter = xxchan.Make[chan struct{}](unsafe.Pointer(uintptr(ptr)+unsafe.Sizeof(*c)), 1)
 	return c
 }
 
